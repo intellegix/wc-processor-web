@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workers' Comp Processor | Intellegix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-dark text-white py-3">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-cpu-fill fs-3 me-2 text-primary"></i>
+                    <div>
+                        <h1 class="h4 mb-0">Intellegix</h1>
+                        <small class="text-muted">Workers' Compensation Processing Suite</small>
+                    </div>
+                </div>
+                <a href="https://foundation.com/foundation_sw_login" target="_blank" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>Foundation Portal
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container py-4">
+        <div class="row g-4">
+            <!-- Left Panel - File Upload -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-upload me-2"></i>Upload Reports</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- ASR Report Upload -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-file-earmark-spreadsheet me-1"></i>ASR Wage Report
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="upload-zone" id="asr-upload-zone">
+                                <input type="file" id="asr-file" accept=".csv,.xlsx,.xls" class="d-none">
+                                <div class="upload-content text-center py-4">
+                                    <i class="bi bi-cloud-upload fs-1 text-muted"></i>
+                                    <p class="mb-1">Drop file here or click to browse</p>
+                                    <small class="text-muted">CSV, XLSX, or XLS files</small>
+                                </div>
+                                <div class="upload-success d-none">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    <span class="file-name"></span>
+                                    <button class="btn btn-sm btn-outline-danger ms-2 remove-file">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ArmorPro Report Upload -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-file-earmark-spreadsheet me-1"></i>ArmorPro Wage Report
+                                <span class="text-muted">(Optional)</span>
+                            </label>
+                            <div class="upload-zone" id="armorpro-upload-zone">
+                                <input type="file" id="armorpro-file" accept=".csv,.xlsx,.xls" class="d-none">
+                                <div class="upload-content text-center py-4">
+                                    <i class="bi bi-cloud-upload fs-1 text-muted"></i>
+                                    <p class="mb-1">Drop file here or click to browse</p>
+                                    <small class="text-muted">CSV, XLSX, or XLS files</small>
+                                </div>
+                                <div class="upload-success d-none">
+                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                    <span class="file-name"></span>
+                                    <button class="btn btn-sm btn-outline-danger ms-2 remove-file">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pay Period -->
+                        <div class="mb-4">
+                            <label for="pay-period" class="form-label fw-bold">
+                                <i class="bi bi-calendar-event me-1"></i>Pay Period End Date
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="pay-period" required>
+                            <small class="text-muted">End date of the pay period being processed</small>
+                        </div>
+
+                        <!-- Process Button -->
+                        <button id="process-btn" class="btn btn-primary btn-lg w-100" disabled>
+                            <i class="bi bi-gear-fill me-2"></i>Process Reports
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Processing Status & Results -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Processing Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Initial State -->
+                        <div id="initial-state" class="text-center py-5">
+                            <i class="bi bi-inbox fs-1 text-muted"></i>
+                            <p class="text-muted mt-3">Upload files and click "Process Reports" to begin</p>
+                        </div>
+
+                        <!-- Processing Steps -->
+                        <div id="processing-steps" class="d-none">
+                            <div class="step-list">
+                                <div class="step" data-step="1">
+                                    <div class="step-icon"><span>1</span></div>
+                                    <div class="step-content">
+                                        <div class="step-title">Loading ASR Report</div>
+                                        <div class="step-status text-muted">Waiting...</div>
+                                    </div>
+                                </div>
+                                <div class="step" data-step="2">
+                                    <div class="step-icon"><span>2</span></div>
+                                    <div class="step-content">
+                                        <div class="step-title">Loading ArmorPro Report</div>
+                                        <div class="step-status text-muted">Waiting...</div>
+                                    </div>
+                                </div>
+                                <div class="step" data-step="3">
+                                    <div class="step-icon"><span>3</span></div>
+                                    <div class="step-content">
+                                        <div class="step-title">Combining Reports</div>
+                                        <div class="step-status text-muted">Waiting...</div>
+                                    </div>
+                                </div>
+                                <div class="step" data-step="4">
+                                    <div class="step-icon"><span>4</span></div>
+                                    <div class="step-content">
+                                        <div class="step-title">Processing Data</div>
+                                        <div class="step-status text-muted">Waiting...</div>
+                                    </div>
+                                </div>
+                                <div class="step" data-step="5">
+                                    <div class="step-icon"><span>5</span></div>
+                                    <div class="step-content">
+                                        <div class="step-title">Preparing Excel Template</div>
+                                        <div class="step-status text-muted">Waiting...</div>
+                                    </div>
+                                </div>
+                                <div class="step" data-step="6">
+                                    <div class="step-icon"><span>6</span></div>
+                                    <div class="step-content">
+                                        <div class="step-title">Generating Excel Report</div>
+                                        <div class="step-status text-muted">Waiting...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results -->
+                        <div id="results-panel" class="d-none">
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <strong>Processing Complete!</strong>
+                            </div>
+
+                            <!-- Summary Cards -->
+                            <div class="row g-3 mb-4" id="summary-cards">
+                                <div class="col-6 col-md-3">
+                                    <div class="summary-card">
+                                        <div class="summary-label">Records</div>
+                                        <div class="summary-value" id="sum-records">--</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="summary-card">
+                                        <div class="summary-label">Regular Wages</div>
+                                        <div class="summary-value" id="sum-regular">$--</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="summary-card">
+                                        <div class="summary-label">OT Wages</div>
+                                        <div class="summary-value" id="sum-overtime">$--</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="summary-card bg-primary text-white">
+                                        <div class="summary-label">Grand Total</div>
+                                        <div class="summary-value" id="sum-total">$--</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Download Files -->
+                            <h6 class="mb-3"><i class="bi bi-download me-2"></i>Download Files</h6>
+                            <div class="list-group" id="download-list">
+                                <!-- Files will be added dynamically -->
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-2 mt-4">
+                                <button class="btn btn-outline-secondary" id="reset-btn">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Process New Reports
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Error State -->
+                        <div id="error-state" class="d-none">
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <strong>Error:</strong> <span id="error-message"></span>
+                            </div>
+                            <button class="btn btn-outline-primary" id="retry-btn">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Try Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-3 mt-auto">
+        <div class="container text-center">
+            <small>Workers' Compensation Processing Suite &copy; 2025 ASR Construction</small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

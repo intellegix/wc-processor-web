@@ -1,0 +1,263 @@
+/* Workers' Comp Processor - Custom Styles */
+
+:root {
+    --primary-color: #2563eb;
+    --primary-dark: #1e40af;
+    --success-color: #059669;
+    --warning-color: #f59e0b;
+    --danger-color: #dc2626;
+    --dark-bg: #1f2937;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f3f4f6;
+}
+
+main {
+    flex: 1;
+}
+
+/* Upload Zone */
+.upload-zone {
+    border: 2px dashed #d1d5db;
+    border-radius: 0.5rem;
+    background-color: #f9fafb;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.upload-zone:hover {
+    border-color: var(--primary-color);
+    background-color: #eff6ff;
+}
+
+.upload-zone.drag-over {
+    border-color: var(--primary-color);
+    background-color: #dbeafe;
+}
+
+.upload-zone.has-file {
+    border-style: solid;
+    border-color: var(--success-color);
+    background-color: #ecfdf5;
+}
+
+.upload-zone .upload-content {
+    padding: 1.5rem;
+}
+
+.upload-zone .upload-success {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.upload-zone .file-name {
+    flex: 1;
+    font-weight: 500;
+    word-break: break-all;
+}
+
+/* Processing Steps */
+.step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background-color: #f9fafb;
+    transition: all 0.3s ease;
+}
+
+.step.processing {
+    background-color: #fef3c7;
+    border-left: 4px solid var(--warning-color);
+}
+
+.step.complete {
+    background-color: #ecfdf5;
+    border-left: 4px solid var(--success-color);
+}
+
+.step.error {
+    background-color: #fef2f2;
+    border-left: 4px solid var(--danger-color);
+}
+
+.step.skipped {
+    background-color: #f3f4f6;
+    opacity: 0.7;
+}
+
+.step-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+.step.processing .step-icon {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.step.complete .step-icon {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.step.complete .step-icon span {
+    display: none;
+}
+
+.step.complete .step-icon::after {
+    content: '\2713';
+}
+
+.step.error .step-icon {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.step.error .step-icon span {
+    display: none;
+}
+
+.step.error .step-icon::after {
+    content: '\2717';
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-title {
+    font-weight: 600;
+    color: #374151;
+}
+
+.step-status {
+    font-size: 0.875rem;
+}
+
+.step.processing .step-status {
+    color: var(--warning-color);
+}
+
+.step.complete .step-status {
+    color: var(--success-color);
+}
+
+.step.error .step-status {
+    color: var(--danger-color);
+}
+
+/* Summary Cards */
+.summary-card {
+    background-color: #f3f4f6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+.summary-card.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.summary-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.summary-card.bg-primary .summary-label {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.summary-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.summary-card.bg-primary .summary-value {
+    color: white;
+}
+
+/* Download List */
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.file-icon {
+    font-size: 1.5rem;
+}
+
+.file-icon.csv {
+    color: #059669;
+}
+
+.file-icon.xlsx {
+    color: #16a34a;
+}
+
+/* Button States */
+.btn:disabled {
+    cursor: not-allowed;
+}
+
+/* Loading Spinner */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .summary-card {
+        padding: 0.75rem;
+    }
+
+    .summary-value {
+        font-size: 1rem;
+    }
+}
+
+/* Animation for processing */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.step.processing .step-icon {
+    animation: pulse 1.5s ease-in-out infinite;
+}

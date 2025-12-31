@@ -6,7 +6,8 @@ Flask backend for processing workers' comp reports
 import os
 import uuid
 from datetime import datetime
-from flask import Flask, request, jsonify, render_template, send_file, session
+from functools import wraps
+from flask import Flask, request, jsonify, render_template, send_file, session, Response
 from werkzeug.utils import secure_filename
 import pandas as pd
 
@@ -17,6 +18,41 @@ from processing.excel_exporter import process_csv_data, import_formatted_data_to
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+# Authentication settings from environment variables
+AUTH_USERNAME = os.environ.get('AUTH_USERNAME', '')
+AUTH_PASSWORD = os.environ.get('AUTH_PASSWORD', '')
+
+
+def check_auth(username, password):
+    """Check if username/password combination is valid"""
+    if not AUTH_USERNAME or not AUTH_PASSWORD:
+        return True  # No auth configured, allow access
+    return username == AUTH_USERNAME and password == AUTH_PASSWORD
+
+
+def authenticate():
+    """Send 401 response to enable basic auth login"""
+    return Response(
+        'Access denied. Please provide valid credentials.',
+        401,
+        {'WWW-Authenticate': 'Basic realm="Workers Comp Processor"'}
+    )
+
+
+def requires_auth(f):
+    """Decorator to require authentication for routes"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # Skip auth if not configured
+        if not AUTH_USERNAME or not AUTH_PASSWORD:
+            return f(*args, **kwargs)
+
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+        return f(*args, **kwargs)
+    return decorated
 
 # Configuration
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
@@ -51,12 +87,14 @@ def get_session_folder(folder_type='upload'):
 
 
 @app.route('/')
+@requires_auth
 def index():
     """Render main application page"""
     return render_template('index.html')
 
 
 @app.route('/api/upload', methods=['POST'])
+@requires_auth
 def upload_file():
     """Handle file upload"""
     if 'file' not in request.files:
@@ -98,6 +136,7 @@ def upload_file():
 
 
 @app.route('/api/process', methods=['POST'])
+@requires_auth
 def process_reports():
     """Process uploaded reports"""
     try:
@@ -266,6 +305,7 @@ def process_reports():
 
 
 @app.route('/api/download/<filename>')
+@requires_auth
 def download_file(filename):
     """Download generated file"""
     try:

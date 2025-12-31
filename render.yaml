@@ -2,6 +2,7 @@ services:
   - type: web
     name: wc-processor
     runtime: python
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
@@ -9,5 +10,9 @@ services:
         value: "3.11.7"
       - key: SECRET_KEY
         generateValue: true
+      - key: AUTH_USERNAME
+        sync: false
+      - key: AUTH_PASSWORD
+        sync: false
     healthCheckPath: /health
     autoDeploy: true

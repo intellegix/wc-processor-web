@@ -398,11 +398,13 @@ def import_formatted_data_to_excel(processed_df, excel_path, output_dir, total_s
         ws.cell(row=current_row, column=3, value=row_data['Last Name'])
         ws.cell(row=current_row, column=4, value="CA")
 
-        # Column E: Class Code
+        # Column E: Class Code - Ensure all digits display properly
         class_code = row_data['Cost Code']
         if pd.notna(class_code):
-            class_code_cell = ws.cell(row=current_row, column=5, value=int(class_code))
-            class_code_cell.number_format = '0'
+            # Convert to int to ensure it's numeric, preserve all digits
+            class_code_value = int(float(class_code))
+            class_code_cell = ws.cell(row=current_row, column=5, value=class_code_value)
+            class_code_cell.number_format = '@'  # Use text format to preserve all digits
 
         # Wage columns
         ws.cell(row=current_row, column=6, value=round(row_data['REGULAR'], 2))
@@ -451,4 +453,144 @@ def import_formatted_data_to_excel(processed_df, excel_path, output_dir, total_s
         'doubletime': total_doubletime,
         'grand_total': grand_total,
         'record_count': len(processed_df)
+    }
+
+
+def generate_standalone_armorpro_report(armorpro_csv, template_path, output_dir, pay_period):
+    """
+    Generate ArmorPro-only report using same template as combined report.
+
+    Args:
+        armorpro_csv: Path to the ArmorPro CSV file
+        template_path: Path to Excel template file
+        output_dir: Directory for output file
+        pay_period: Pay period in YYYYMMDD format
+
+    Returns:
+        str: Path to generated ArmorPro Excel file
+        dict: Totals dictionary with earnings breakdown
+    """
+    print(f"=== GENERATING ARMORPRO STANDALONE REPORT ===")
+    print(f"Processing ArmorPro CSV: {os.path.basename(armorpro_csv)}")
+
+    # Process the ArmorPro CSV data using existing function
+    processed_data, total_source_earnings = process_csv_data(armorpro_csv)
+
+    print(f"ArmorPro processed data: {len(processed_data)} records")
+    print(f"ArmorPro total earnings: ${total_source_earnings:,.2f}")
+
+    # Load Excel template
+    print(f"Loading Excel template: {os.path.basename(template_path)}")
+    wb = load_workbook(template_path)
+    ws = wb["Payroll Entry"]
+
+    # Unprotect the worksheet
+    if ws.protection.sheet:
+        ws.protection.sheet = False
+        print("Worksheet protection removed")
+
+    # Set column widths
+    ws.column_dimensions['E'].width = 12
+
+    # Write G12 - Gross Wages from Register
+    ws.cell(row=12, column=7, value=total_source_earnings)
+    print(f"G12 (Gross Wages from Register) set to: ${total_source_earnings:,.2f}")
+
+    # Update pay period date if provided
+    if pay_period:
+        try:
+            pay_period_date = datetime.strptime(pay_period, "%Y%m%d")
+            pay_period_start = pay_period_date - timedelta(days=6)
+
+            ws.cell(row=9, column=7, value=pay_period_date)
+            ws.cell(row=10, column=7, value=pay_period_start)
+            ws.cell(row=11, column=7, value=pay_period_date)
+
+            print(f"Pay period dates updated:")
+            print(f"  G9 (Report date): {pay_period_date.strftime('%Y-%m-%d')}")
+            print(f"  G10 (Period start date): {pay_period_start.strftime('%Y-%m-%d')}")
+            print(f"  G11 (Period end date): {pay_period_date.strftime('%Y-%m-%d')}")
+        except ValueError:
+            print(f"Warning: Invalid pay period format '{pay_period}'")
+
+    # Clear old template data
+    start_row = 23
+    print(f"Clearing old data from rows {start_row} to 400...")
+    for row in range(start_row, 401):
+        for col in range(1, 17):
+            cell = ws.cell(row=row, column=col)
+            cell.value = None
+
+    print(f"Starting ArmorPro data import at row {start_row}...")
+
+    current_row = start_row
+
+    for idx, row_data in processed_data.iterrows():
+        # Column A: Employee Number
+        employee_number = row_data.get('Employee Number', '')
+        try:
+            employee_number = int(float(str(employee_number).strip())) if pd.notna(employee_number) and employee_number != '' else ''
+        except (ValueError, TypeError):
+            employee_number = str(employee_number).strip() if pd.notna(employee_number) else ''
+
+        ws.cell(row=current_row, column=1, value=employee_number)
+        ws.cell(row=current_row, column=2, value=row_data['First Name'])
+        ws.cell(row=current_row, column=3, value=row_data['Last Name'])
+        ws.cell(row=current_row, column=4, value="CA")
+
+        # Column E: Class Code - Ensure all digits display properly
+        class_code = row_data['Cost Code']
+        if pd.notna(class_code):
+            # Convert to int to ensure it's numeric, preserve all digits
+            class_code_value = int(float(class_code))
+            class_code_cell = ws.cell(row=current_row, column=5, value=class_code_value)
+            class_code_cell.number_format = '@'  # Use text format to preserve all digits
+
+        # Wage columns
+        ws.cell(row=current_row, column=6, value=round(row_data['REGULAR'], 2))
+        ws.cell(row=current_row, column=7, value=round(row_data['OVERTIME'], 2))
+        ws.cell(row=current_row, column=8, value=round(row_data['DOUBLETIME'], 2))
+
+        current_row += 1
+
+        if idx % 25 == 0 and idx > 0:
+            print(f"  Processed {idx} ArmorPro records...")
+
+    print(f"  Processed all {len(processed_data)} ArmorPro records")
+
+    # Calculate totals
+    total_regular = processed_data['REGULAR'].sum()
+    total_overtime = processed_data['OVERTIME'].sum()
+    total_doubletime = processed_data['DOUBLETIME'].sum()
+    grand_total = total_regular + total_overtime + total_doubletime
+
+    print(f"ARMORPRO SUMMARY TOTALS")
+    print(f"Regular Wages: ${total_regular:,.2f}")
+    print(f"Overtime (1.5x): ${total_overtime:,.2f}")
+    print(f"Double Time (2x): ${total_doubletime:,.2f}")
+    print(f"GRAND TOTAL EARNINGS: ${grand_total:,.2f}")
+
+    # Save the workbook with ArmorPro-specific filename
+    if pay_period:
+        time_part = datetime.now().strftime("%H%M%S")
+        output_filename = f"ArmorPro Workers Comp {pay_period}_{time_part}.xlsx"
+    else:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_filename = f"ArmorPro Workers Comp {timestamp}.xlsx"
+
+    output_path = os.path.join(output_dir, output_filename)
+
+    print(f"Saving ArmorPro formatted workbook to: {output_filename}")
+    wb.save(output_path)
+    wb.close()
+
+    print(f"[SUCCESS] ArmorPro data imported and formatted successfully!")
+    print(f"ArmorPro output file: {output_path}")
+
+    return output_path, {
+        'regular': total_regular,
+        'overtime': total_overtime,
+        'doubletime': total_doubletime,
+        'grand_total': grand_total,
+        'record_count': len(processed_data)
     }

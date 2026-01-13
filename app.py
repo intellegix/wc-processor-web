@@ -14,7 +14,7 @@ import pandas as pd
 # Import processing modules
 from processing.wage_processor import load_and_process_wage_report
 from processing.report_combiner import combine_reports
-from processing.excel_exporter import process_csv_data, import_formatted_data_to_excel
+from processing.excel_exporter import process_csv_data, import_formatted_data_to_excel, generate_standalone_armorpro_report
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -278,8 +278,46 @@ def process_reports():
             results['files'].append({
                 'name': os.path.basename(excel_output),
                 'path': excel_output,
-                'type': 'xlsx'
+                'type': 'xlsx',
+                'description': 'Combined Workers Comp Report'
             })
+
+            # Step 7: Generate ArmorPro Standalone Report (if ArmorPro data provided)
+            armorpro_excel_output = None
+            armorpro_totals = None
+
+            if armorpro_output_path:
+                try:
+                    results['steps'].append({'step': 7, 'name': 'Generating ArmorPro Standalone Report', 'status': 'processing'})
+
+                    armorpro_excel_output, armorpro_totals = generate_standalone_armorpro_report(
+                        armorpro_output_path,
+                        excel_template,
+                        session_output,
+                        pay_period=pay_period
+                    )
+
+                    results['steps'][-1]['status'] = 'complete'
+                    results['files'].append({
+                        'name': os.path.basename(armorpro_excel_output),
+                        'path': armorpro_excel_output,
+                        'type': 'xlsx',
+                        'description': 'ArmorPro Workers Comp Report (Standalone)'
+                    })
+
+                    # Add ArmorPro totals to summary
+                    results['armorpro_summary'] = {
+                        'regular_wages': round(armorpro_totals['regular'], 2),
+                        'overtime_wages': round(armorpro_totals['overtime'], 2),
+                        'doubletime_wages': round(armorpro_totals['doubletime'], 2),
+                        'grand_total': round(armorpro_totals['grand_total'], 2),
+                        'record_count': armorpro_totals['record_count'],
+                    }
+
+                except Exception as e:
+                    print(f"Warning: ArmorPro standalone report failed: {e}")
+                    results['steps'][-1]['status'] = 'error'
+                    results['steps'][-1]['message'] = f"ArmorPro standalone failed: {str(e)}"
 
             results['summary'] = {
                 'regular_wages': round(totals['regular'], 2),

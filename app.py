@@ -174,10 +174,13 @@ def process_reports():
         # Step 1: Process ASR report
         results['steps'].append({'step': 1, 'name': 'Loading ASR Report', 'status': 'processing'})
 
+        # Process ASR without subtotals if ArmorPro will be provided (for clean combining)
+        include_asr_subtotals = not armorpro_file
         asr_df, asr_output_path = load_and_process_wage_report(
             asr_path,
             session_output,
-            "ASRWorkersCompReport.csv"
+            "ASRWorkersCompReport.csv",
+            include_subtotals=include_asr_subtotals
         )
         results['steps'][-1]['status'] = 'complete'
         results['files'].append({
@@ -193,10 +196,12 @@ def process_reports():
             armorpro_path = os.path.join(session_upload, armorpro_file)
 
             if os.path.exists(armorpro_path):
+                # Process ArmorPro without subtotals for clean combining
                 armorpro_df, armorpro_output_path = load_and_process_wage_report(
                     armorpro_path,
                     session_output,
-                    "ArmorProWorkersCompReport.csv"
+                    "ArmorProWorkersCompReport.csv",
+                    include_subtotals=False
                 )
                 results['steps'][-1]['status'] = 'complete'
                 results['files'].append({

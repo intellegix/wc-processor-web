@@ -404,7 +404,7 @@ def import_formatted_data_to_excel(processed_df, excel_path, output_dir, total_s
             # Convert to int to ensure it's numeric, preserve all digits
             class_code_value = int(float(class_code))
             class_code_cell = ws.cell(row=current_row, column=5, value=class_code_value)
-            class_code_cell.number_format = '@'  # Use text format to preserve all digits
+            class_code_cell.number_format = '0'  # Use integer format to match CLI version
 
         # Wage columns
         ws.cell(row=current_row, column=6, value=round(row_data['REGULAR'], 2))
@@ -544,7 +544,7 @@ def generate_standalone_armorpro_report(armorpro_csv, template_path, output_dir,
             # Convert to int to ensure it's numeric, preserve all digits
             class_code_value = int(float(class_code))
             class_code_cell = ws.cell(row=current_row, column=5, value=class_code_value)
-            class_code_cell.number_format = '@'  # Use text format to preserve all digits
+            class_code_cell.number_format = '0'  # Use integer format to match CLI version
 
         # Wage columns
         ws.cell(row=current_row, column=6, value=round(row_data['REGULAR'], 2))
@@ -570,13 +570,13 @@ def generate_standalone_armorpro_report(armorpro_csv, template_path, output_dir,
     print(f"Double Time (2x): ${total_doubletime:,.2f}")
     print(f"GRAND TOTAL EARNINGS: ${grand_total:,.2f}")
 
-    # Save the workbook with ArmorPro-specific filename
+    # Save the workbook with ArmorPro-specific filename matching standard format
     if pay_period:
         time_part = datetime.now().strftime("%H%M%S")
-        output_filename = f"ArmorPro Workers Comp {pay_period}_{time_part}.xlsx"
+        output_filename = f"Workers Comp ArmorPro {pay_period}_{time_part}.xlsx"
     else:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"ArmorPro Workers Comp {timestamp}.xlsx"
+        output_filename = f"Workers Comp ArmorPro {timestamp}.xlsx"
 
     output_path = os.path.join(output_dir, output_filename)
 

@@ -322,7 +322,7 @@ def validate_and_correct_all_class_codes(df):
     return df, report
 
 
-def load_and_process_wage_report(file_path, output_folder, report_name="ASRWorkersCompReport.csv"):
+def load_and_process_wage_report(file_path, output_folder, report_name="ASRWorkersCompReport.csv", include_subtotals=True):
     """Main function to load and process wage reports"""
 
     if not os.path.isfile(file_path):
@@ -403,54 +403,59 @@ def load_and_process_wage_report(file_path, output_folder, report_name="ASRWorke
     # Comprehensive class code validation
     detail, validation_report = validate_and_correct_all_class_codes(detail)
 
-    # Add detail rows with individual-level grand totals
+    # Add detail rows with individual-level grand totals (conditional)
     detail = detail.sort_values(by=['Employee Number', 'Employee Name', 'Sort Option', 'Job No', 'Job Description', 'Earn Type'])
-    all_rows = []
-    for emp, emp_group in detail.groupby('Employee Name', sort=True):
-        emp_number = emp_group['Employee Number'].iloc[0]
 
-        for _, row in emp_group.iterrows():
-            all_rows.append(row)
+    if include_subtotals:
+        all_rows = []
+        for emp, emp_group in detail.groupby('Employee Name', sort=True):
+            emp_number = emp_group['Employee Number'].iloc[0]
 
-        # Subtotals
-        subgroup_types = {
-            'Regular Wages': regular_wages,
-            'Overtime Wages': overtime_wages,
-            'Doubletime Wages': doubletime_wages
-        }
-        for name, types in subgroup_types.items():
-            sub = emp_group[emp_group['Earn Type'].isin(types)]
-            if not sub.empty:
-                subtotal = {
-                    'Employee Name': emp,
-                    'Employee Number': emp_number,
-                    'Job No': '',
-                    'Job Description': f'---{name.upper()} TOTAL---',
-                    'Cost Code': '',
-                    'Earn Type': ','.join(types),
-                    'Hours': sub['Hours'].sum().round(2),
-                    'Earnings': sub['Earnings'].sum().round(2),
-                    'Exposure': sub['Exposure'].sum().round(2),
-                    'Sort Option': ''
-                }
-                all_rows.append(pd.Series(subtotal))
+            for _, row in emp_group.iterrows():
+                all_rows.append(row)
 
-        # Grand total
-        emp_total = {
-            'Employee Name': emp,
-            'Employee Number': emp_number,
-            'Job No': '',
-            'Job Description': '--GRAND TOTAL FOR EMPLOYEE--',
-            'Cost Code': '',
-            'Earn Type': '',
-            'Hours': emp_group['Hours'].sum().round(2),
-            'Earnings': emp_group['Earnings'].sum().round(2),
-            'Exposure': emp_group['Exposure'].sum().round(2),
-            'Sort Option': ''
-        }
-        all_rows.append(pd.Series(emp_total))
+            # Subtotals
+            subgroup_types = {
+                'Regular Wages': regular_wages,
+                'Overtime Wages': overtime_wages,
+                'Doubletime Wages': doubletime_wages
+            }
+            for name, types in subgroup_types.items():
+                sub = emp_group[emp_group['Earn Type'].isin(types)]
+                if not sub.empty:
+                    subtotal = {
+                        'Employee Name': emp,
+                        'Employee Number': emp_number,
+                        'Job No': '',
+                        'Job Description': f'---{name.upper()} TOTAL---',
+                        'Cost Code': '',
+                        'Earn Type': ','.join(types),
+                        'Hours': sub['Hours'].sum().round(2),
+                        'Earnings': sub['Earnings'].sum().round(2),
+                        'Exposure': sub['Exposure'].sum().round(2),
+                        'Sort Option': ''
+                    }
+                    all_rows.append(pd.Series(subtotal))
 
-    report_df = pd.DataFrame(all_rows, columns=detail.columns)
+            # Grand total
+            emp_total = {
+                'Employee Name': emp,
+                'Employee Number': emp_number,
+                'Job No': '',
+                'Job Description': '--GRAND TOTAL FOR EMPLOYEE--',
+                'Cost Code': '',
+                'Earn Type': '',
+                'Hours': emp_group['Hours'].sum().round(2),
+                'Earnings': emp_group['Earnings'].sum().round(2),
+                'Exposure': emp_group['Exposure'].sum().round(2),
+                'Sort Option': ''
+            }
+            all_rows.append(pd.Series(emp_total))
+
+        report_df = pd.DataFrame(all_rows, columns=detail.columns)
+    else:
+        # Return only detail rows without subtotals for clean combining
+        report_df = detail.copy()
 
     # Output file management
     os.makedirs(output_folder, exist_ok=True)

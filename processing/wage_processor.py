@@ -28,7 +28,7 @@ def get_4digit_to_6digit_mapping():
         5482: 548234,   # Painting High Wage (>= $32/hr)
         5485: 548515,   # Plastering High Wage (>= $38/hr)
         5553: 555311,   # Roofing High Wage (>= $31/hr)
-        8810: 8810,     # Clerical Office Employees (no change)
+        8810: 881002,   # Clerical Office Employees (convert to 6-digit)
         # Additional codes
         510704: 510704, # Door/Window Installation (already 6-digit)
         553823: 553823, # Sheet Metal Low Wage (already 6-digit)
@@ -142,7 +142,7 @@ def apply_employee_specific_corrections(df):
 
     employee_rules = {
         'Kidwell , Austin': {
-            'correct_code': 8810,
+            'correct_code': 881002,
             'reason': 'Office/clerical duties only',
             'description': 'Clerical Office Employees (NOC)'
         }

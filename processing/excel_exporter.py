@@ -190,7 +190,7 @@ def apply_employee_specific_corrections(df):
 
     employee_rules = {
         'Kidwell , Austin': {
-            'correct_code': 8810,
+            'correct_code': 881002,
             'reason': 'Office/clerical duties only',
             'description': 'Clerical Office Employees (NOC)'
         }

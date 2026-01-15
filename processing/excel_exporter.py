@@ -433,10 +433,10 @@ def import_formatted_data_to_excel(processed_df, excel_path, output_dir, total_s
     # Save the workbook
     if pay_period:
         time_part = datetime.now().strftime("%H%M%S")
-        output_filename = f"Workers Comp {pay_period}_{time_part}.xlsx"
+        output_filename = f"Workers_Comp_{pay_period}_{time_part}.xlsx"
     else:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"Workers Comp {timestamp}.xlsx"
+        output_filename = f"Workers_Comp_{timestamp}.xlsx"
 
     output_path = os.path.join(output_dir, output_filename)
 
@@ -573,10 +573,10 @@ def generate_standalone_armorpro_report(armorpro_csv, template_path, output_dir,
     # Save with standard filename format (subtle suffix to avoid conflicts with combined reports)
     if pay_period:
         time_part = datetime.now().strftime("%H%M%S")
-        output_filename = f"Workers Comp {pay_period}_{time_part}_AP.xlsx"
+        output_filename = f"Workers_Comp_{pay_period}_{time_part}_AP.xlsx"
     else:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"Workers Comp {timestamp}_AP.xlsx"
+        output_filename = f"Workers_Comp_{timestamp}_AP.xlsx"
 
     output_path = os.path.join(output_dir, output_filename)
 

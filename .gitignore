@@ -42,6 +42,7 @@ uploads/
 output/
 templates_excel/
 *.xlsx
+!2025*.xlsx
 *.xls
 *.csv
 

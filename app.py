@@ -312,11 +312,11 @@ def process_reports():
 
                     # Add ArmorPro totals to summary
                     results['armorpro_summary'] = {
-                        'regular_wages': round(armorpro_totals['regular'], 2),
-                        'overtime_wages': round(armorpro_totals['overtime'], 2),
-                        'doubletime_wages': round(armorpro_totals['doubletime'], 2),
-                        'grand_total': round(armorpro_totals['grand_total'], 2),
-                        'record_count': armorpro_totals['record_count'],
+                        'regular_wages': float(round(armorpro_totals['regular'], 2)),
+                        'overtime_wages': float(round(armorpro_totals['overtime'], 2)),
+                        'doubletime_wages': float(round(armorpro_totals['doubletime'], 2)),
+                        'grand_total': float(round(armorpro_totals['grand_total'], 2)),
+                        'record_count': int(armorpro_totals['record_count']),
                     }
 
                 except Exception as e:
@@ -325,12 +325,12 @@ def process_reports():
                     results['steps'][-1]['message'] = f"ArmorPro standalone failed: {str(e)}"
 
             results['summary'] = {
-                'regular_wages': round(totals['regular'], 2),
-                'overtime_wages': round(totals['overtime'], 2),
-                'doubletime_wages': round(totals['doubletime'], 2),
-                'grand_total': round(totals['grand_total'], 2),
-                'record_count': totals['record_count'],
-                'source_total': round(total_source_earnings, 2)
+                'regular_wages': float(round(totals['regular'], 2)),
+                'overtime_wages': float(round(totals['overtime'], 2)),
+                'doubletime_wages': float(round(totals['doubletime'], 2)),
+                'grand_total': float(round(totals['grand_total'], 2)),
+                'record_count': int(totals['record_count']),
+                'source_total': float(round(total_source_earnings, 2))
             }
 
         # Store file paths in session for download

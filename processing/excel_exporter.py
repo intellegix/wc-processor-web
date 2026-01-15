@@ -570,17 +570,17 @@ def generate_standalone_armorpro_report(armorpro_csv, template_path, output_dir,
     print(f"Double Time (2x): ${total_doubletime:,.2f}")
     print(f"GRAND TOTAL EARNINGS: ${grand_total:,.2f}")
 
-    # Save the workbook with ArmorPro-specific filename matching standard format
+    # Save with standard filename format (subtle suffix to avoid conflicts with combined reports)
     if pay_period:
         time_part = datetime.now().strftime("%H%M%S")
-        output_filename = f"Workers Comp ArmorPro {pay_period}_{time_part}.xlsx"
+        output_filename = f"Workers Comp {pay_period}_{time_part}_AP.xlsx"
     else:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"Workers Comp ArmorPro {timestamp}.xlsx"
+        output_filename = f"Workers Comp {timestamp}_AP.xlsx"
 
     output_path = os.path.join(output_dir, output_filename)
 
-    print(f"Saving ArmorPro formatted workbook to: {output_filename}")
+    print(f"Saving formatted workbook to: {output_filename}")
     wb.save(output_path)
     wb.close()
 
